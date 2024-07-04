@@ -14,10 +14,11 @@ jwt = JWTManager()
 socketio = SocketIO(cors_allowed_origins="*")
 migrate = Migrate()
 
+
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
-    
+
     db.init_app(app)
     bcrypt.init_app(app)
     jwt.init_app(app)
@@ -27,6 +28,7 @@ def create_app():
 
     from app.controllers.admin_controller import admin_bp
     from app.controllers.user_controller import user_bp
+    from app.controllers.angkutan_controller import angkutan_bp
     from app.controllers.location_driver_controller import location_bp
     from app.controllers.location_passenger_controller import location_passenger_bp
 
@@ -34,6 +36,7 @@ def create_app():
     app.register_blueprint(user_bp)
     app.register_blueprint(location_bp)
     app.register_blueprint(location_passenger_bp)
+    app.register_blueprint(angkutan_bp)
 
     return app
 
@@ -46,4 +49,3 @@ def create_app():
 #             return False
 #         return f(*args, **kwargs)
 #     return wrapper
-
