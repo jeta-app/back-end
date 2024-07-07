@@ -90,9 +90,9 @@ def logout():
 
 
 @jwt.expired_token_loader
-def expired_token_callback(expired_token):
-    token_type = expired_token['type']
-    identity = expired_token['sub']
+def expired_token_callback(expired_token, decoded_token):
+    token_type = decoded_token['type']
+    identity = decoded_token['sub']
 
     if token_type == 'access':
         user_id = identity['id']
@@ -107,12 +107,17 @@ def expired_token_callback(expired_token):
     }), 401
 
 
-@user_bp.route('/user/<user_id>')
+@user_bp.route('/profile', methods=['GET'])
 @jwt_required()
-def user(user_id):
+def get_user_profile():
+    current_user = get_jwt_identity()
+
+    user_id = current_user['id']  # Ambil id pengguna dari token JWT
     user = Users.query.get(user_id)
+
     if not user:
         return jsonify(message="User not found"), 404
+
     user_data = {
         'id': user.id,
         'username': user.username,
@@ -124,4 +129,5 @@ def user(user_id):
         'route': user.route,
         'operational_time': user.operational_time
     }
+
     return jsonify(user=user_data), 200

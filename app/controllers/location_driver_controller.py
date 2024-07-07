@@ -138,3 +138,4 @@ def handle_available_drivers_update(data):
 
     emit('allDriversUpdate', drivers_data, broadcast=True)
     print('Sent available drivers update to connected clients')
+
