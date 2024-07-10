@@ -7,7 +7,6 @@ from app.models.location_drivers import Location_Drivers
 
 location_bp = Blueprint('location_update', __name__)
 
-
 @location_bp.route('/update', methods=['POST'])
 @jwt_required()
 def update_location():
@@ -45,7 +44,6 @@ def update_location():
     socketio.emit('locationUpdate', {
         'driver_id': driver_id,
         'origin': origin,
-        'destination': destination,
         'heading': heading
     })
 
@@ -88,7 +86,6 @@ def handle_update_location(data):
     socketio.emit('locationUpdate', {
         'driver_id': driver_id,
         'origin': origin,
-        'destination': destination,
         'heading': heading
     })
 
@@ -115,7 +112,6 @@ def handle_all_driver_locations(data):
     location_data = [{
         'driver_id': loc.driver_id,
         'origin': {'lat': loc.origin_lat, 'lng': loc.origin_lng},
-        'destination': {'lat': loc.destination_lat, 'lng': loc.destination_lng},
         'heading': loc.heading
     } for loc in locations]
 
@@ -138,4 +134,3 @@ def handle_available_drivers_update(data):
 
     emit('allDriversUpdate', drivers_data, broadcast=True)
     print('Sent available drivers update to connected clients')
-

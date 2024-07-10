@@ -112,7 +112,7 @@ def expired_token_callback(expired_token, decoded_token):
 def get_user_profile():
     current_user = get_jwt_identity()
 
-    user_id = current_user['id']  # Ambil id pengguna dari token JWT
+    user_id = current_user['id'] 
     user = Users.query.get(user_id)
 
     if not user:
@@ -131,3 +131,28 @@ def get_user_profile():
     }
 
     return jsonify(user=user_data), 200
+
+@user_bp.route('/driver/<int:driver_id>', methods=['GET'])
+@jwt_required()
+def get_driver_by_id(driver_id):
+    driver = Users.query.get(driver_id)
+    if not driver:
+        return jsonify(message="Driver not found"), 404
+
+    if driver.role != Role.Driver:
+        return jsonify(message="User is not a driver"), 400
+
+    driver_data = {
+        'id': driver.id,
+        'username': driver.username,
+        'firstname': driver.firstname,
+        'lastname': driver.lastname,
+        'email': driver.email,
+        'phone_number': driver.phone_Number,
+        'role': driver.role.name,
+        'route': driver.route,
+        'operational_time': driver.operational_time,
+        'status': driver.status.name if driver.status else None
+    }
+
+    return jsonify(driver=driver_data), 200
