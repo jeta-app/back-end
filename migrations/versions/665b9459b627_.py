@@ -1,8 +1,8 @@
-"""jeta_migration
+"""empty message
 
-Revision ID: b44b22b49293
+Revision ID: 665b9459b627
 Revises: 
-Create Date: 2024-07-05 03:02:23.468165
+Create Date: 2024-07-11 14:36:16.210816
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = 'b44b22b49293'
+revision = '665b9459b627'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -22,6 +22,16 @@ def upgrade():
         batch_op.alter_column('angkutan_jurusan',
                existing_type=mysql.VARCHAR(length=255),
                type_=sa.String(length=150),
+               existing_nullable=False)
+
+    with op.batch_alter_table('destination_driver', schema=None) as batch_op:
+        batch_op.alter_column('destination_lat',
+               existing_type=mysql.DECIMAL(precision=10, scale=8),
+               type_=sa.Float(),
+               existing_nullable=False)
+        batch_op.alter_column('destination_lng',
+               existing_type=mysql.DECIMAL(precision=11, scale=8),
+               type_=sa.Float(),
                existing_nullable=False)
 
     with op.batch_alter_table('location_passenger', schema=None) as batch_op:
@@ -94,6 +104,16 @@ def downgrade():
                type_=mysql.TIMESTAMP(),
                existing_nullable=False,
                existing_server_default=sa.text('current_timestamp()'))
+
+    with op.batch_alter_table('destination_driver', schema=None) as batch_op:
+        batch_op.alter_column('destination_lng',
+               existing_type=sa.Float(),
+               type_=mysql.DECIMAL(precision=11, scale=8),
+               existing_nullable=False)
+        batch_op.alter_column('destination_lat',
+               existing_type=sa.Float(),
+               type_=mysql.DECIMAL(precision=10, scale=8),
+               existing_nullable=False)
 
     with op.batch_alter_table('angkutan', schema=None) as batch_op:
         batch_op.alter_column('angkutan_jurusan',

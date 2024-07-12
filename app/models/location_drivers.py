@@ -1,4 +1,3 @@
-# app/models/location_update.py
 
 from app import db
 
@@ -8,7 +7,5 @@ class Location_Drivers(db.Model):
     driver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     origin_lat = db.Column(db.Float, nullable=False)
     origin_lng = db.Column(db.Float, nullable=False)
-    destination_lat = db.Column(db.Float, nullable=False)
-    destination_lng = db.Column(db.Float, nullable=False)
     heading = db.Column(db.Float, nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False, server_default=db.func.current_timestamp())

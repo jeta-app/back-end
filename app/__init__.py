@@ -31,13 +31,14 @@ def create_app():
     from app.controllers.angkutan_controller import angkutan_bp
     from app.controllers.location_driver_controller import location_bp
     from app.controllers.location_passenger_controller import location_passenger_bp
+    from app.controllers.destination_driver_controller import destination_driver_bp
 
     app.register_blueprint(admin_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(location_bp)
     app.register_blueprint(location_passenger_bp)
     app.register_blueprint(angkutan_bp)
-
+    app.register_blueprint(destination_driver_bp)
     return app
 
 # def jwt_required_socket(f):
