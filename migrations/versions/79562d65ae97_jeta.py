@@ -1,8 +1,8 @@
 """jeta
 
-Revision ID: 48b901d4e560
+Revision ID: 79562d65ae97
 Revises: 
-Create Date: 2024-07-13 10:27:08.592883
+Create Date: 2024-07-15 02:03:57.397879
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = '48b901d4e560'
+revision = '79562d65ae97'
 down_revision = None
 branch_labels = None
 depends_on = None

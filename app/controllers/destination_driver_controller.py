@@ -1,8 +1,9 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import db
 from app.models.destination_driver import Destination_Driver
 from app.models.user import Users, Role
+from sqlalchemy.exc import SQLAlchemyError
 
 destination_driver_bp = Blueprint('destination_driver_bp', __name__)
 
@@ -12,35 +13,45 @@ def update_destination():
     try:
         data = request.json
 
-        if not data or 'destination' not in data:
-            return jsonify(message="Invalid JSON format or missing 'destination' field"), 400
+        if not data or 'destinations' not in data or 'driver_id' not in data:
+            return jsonify(message="Invalid JSON format or missing 'destinations' or 'driver_id' field"), 400
 
-        destination = data.get('destination')
+        destinations = data.get('destinations')
         driver_id = data.get('driver_id')
         
-        if not driver_id or not destination:
-            return jsonify(message="Missing required fields"), 400
+        if not driver_id or not destinations or not isinstance(destinations, list):
+            return jsonify(message="Missing required fields or 'destinations' is not a list"), 400
 
-        destination_driver = Destination_Driver.query.filter_by(
-        driver_id=driver_id).first()
+        for destination in destinations:
+            try:
+                lat, lng = map(float, destination.split(','))
 
-        if destination_driver:
-            destination_driver.destination_lat = destination['lat']
-            destination_driver.destination_lng = destination['lng']
-        else:
-            destination_driver = Destination_Driver(
-                driver_id=driver_id,
-                destination_lat=destination['lat'],
-                destination_lng=destination['lng']
-            )
-            db.session.add(destination_driver)
+            except ValueError:
+                return jsonify(message="Invalid destination format, each destination must be a string in the format 'lat,lng'"), 400
 
+            existing_destination = Destination_Driver.query.filter_by(driver_id=driver_id, destination_lat=lat, destination_lng=lng).first()
+
+            if existing_destination:
+                
+                existing_destination.destination_lat = lat
+                existing_destination.destination_lng = lng
+            else:
+                
+                new_destination = Destination_Driver(
+                    driver_id=driver_id,
+                    destination_lat=lat,
+                    destination_lng=lng
+                )
+                db.session.add(new_destination)
+        
         db.session.commit()
-        return jsonify(message="Destination updated successfully"), 200
+        return jsonify(message="Destinations updated successfully"), 200
 
     except Exception as e:
         db.session.rollback()
-        return jsonify(message=f"Failed to update destination: {str(e)}"), 500
+        return jsonify(message=f"Failed to update destinations: {str(e)}"), 500
+
+
 
 @destination_driver_bp.route('/all_destinations', methods=['GET'])
 @jwt_required()
