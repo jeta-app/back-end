@@ -9,7 +9,7 @@ destination_driver_bp = Blueprint('destination_driver_bp', __name__)
 
 @destination_driver_bp.route('/update_destination', methods=['POST'])
 @jwt_required()
-def update_destination():
+def update_destination():   
     try:
         data = request.json
 
@@ -34,7 +34,6 @@ def update_destination():
             except ValueError:
                 return jsonify(message="Invalid destination format, each destination must be a string in the format 'lat,lng'"), 400
 
-            print(f"Querying DB with Driver ID: {driver_id}, Dest Lat: {dest_lat}, Dest Lng: {dest_lng}")
 
             existing_destination = Destination_Driver.query.filter(
                 Destination_Driver.driver_id == driver_id,
