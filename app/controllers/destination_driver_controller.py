@@ -3,11 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import db
 from app.models.destination_driver import Destination_Driver
 from app.models.user import Users, Role
-from sqlalchemy.exc import SQLAlchemyError
-import logging
 
-
-logging.basicConfig(level=logging.DEBUG) 
 
 destination_driver_bp = Blueprint('destination_driver_bp', __name__)
 
@@ -38,10 +34,8 @@ def update_destination():
             except ValueError:
                 return jsonify(message="Invalid destination format, each destination must be a string in the format 'lat,lng'"), 400
 
-            # Cetak nilai sebelum query
             print(f"Querying DB with Driver ID: {driver_id}, Dest Lat: {dest_lat}, Dest Lng: {dest_lng}")
 
-            # Cari entitas yang sudah ada dalam basis data
             existing_destination = Destination_Driver.query.filter(
                 Destination_Driver.driver_id == driver_id,
                 db.func.abs(Destination_Driver.destination_lat - dest_lat) < 0.0001,
@@ -49,20 +43,9 @@ def update_destination():
             ).first()
 
             if existing_destination:
-                # Cetak nilai dari objek yang diambil dari basis data
-                print(f"Existing Destination Found in DB - Driver ID: {existing_destination.driver_id}, "
-                      f"Dest Lat: {existing_destination.destination_lat}, Dest Lng: {existing_destination.destination_lng}, "
-                      f"Origin Lat: {existing_destination.origin_lat}, Origin Lng: {existing_destination.origin_lng}")
-
-                # Jika entitas sudah ada, lakukan operasi update
                 existing_destination.origin_lat = origin_lat
                 existing_destination.origin_lng = origin_lng
             else:
-                # Cetak informasi jika entitas tidak ditemukan
-                print(f"No Existing Destination Found - Adding New Destination for Driver ID: {driver_id}, "
-                      f"Dest Lat: {dest_lat}, Dest Lng: {dest_lng}")
-
-                # Jika tidak ada, lakukan operasi create
                 new_destination = Destination_Driver(
                     driver_id=driver_id,
                     destination_lat=dest_lat,

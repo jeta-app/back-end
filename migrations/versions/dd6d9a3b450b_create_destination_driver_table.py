@@ -1,8 +1,8 @@
-"""jeta
+"""create destination_driver table
 
-Revision ID: 749356337ef0
+Revision ID: dd6d9a3b450b
 Revises: 
-Create Date: 2024-07-16 01:29:45.510946
+Create Date: 2024-07-17 15:40:08.946332
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = '749356337ef0'
+revision = 'dd6d9a3b450b'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -22,6 +22,22 @@ def upgrade():
         batch_op.alter_column('driver_id',
                existing_type=mysql.INTEGER(display_width=11),
                nullable=True)
+        batch_op.alter_column('destination_lat',
+               existing_type=mysql.DOUBLE(asdecimal=True),
+               type_=sa.Float(),
+               existing_nullable=False)
+        batch_op.alter_column('destination_lng',
+               existing_type=mysql.DOUBLE(asdecimal=True),
+               type_=sa.Float(),
+               existing_nullable=False)
+        batch_op.alter_column('origin_lat',
+               existing_type=mysql.DOUBLE(asdecimal=True),
+               type_=sa.Float(),
+               existing_nullable=False)
+        batch_op.alter_column('origin_lng',
+               existing_type=mysql.DOUBLE(asdecimal=True),
+               type_=sa.Float(),
+               existing_nullable=False)
 
     with op.batch_alter_table('users', schema=None) as batch_op:
         batch_op.add_column(sa.Column('phone_Number', sa.String(length=200), nullable=False))
@@ -79,6 +95,22 @@ def downgrade():
         batch_op.drop_column('phone_Number')
 
     with op.batch_alter_table('destination_driver', schema=None) as batch_op:
+        batch_op.alter_column('origin_lng',
+               existing_type=sa.Float(),
+               type_=mysql.DOUBLE(asdecimal=True),
+               existing_nullable=False)
+        batch_op.alter_column('origin_lat',
+               existing_type=sa.Float(),
+               type_=mysql.DOUBLE(asdecimal=True),
+               existing_nullable=False)
+        batch_op.alter_column('destination_lng',
+               existing_type=sa.Float(),
+               type_=mysql.DOUBLE(asdecimal=True),
+               existing_nullable=False)
+        batch_op.alter_column('destination_lat',
+               existing_type=sa.Float(),
+               type_=mysql.DOUBLE(asdecimal=True),
+               existing_nullable=False)
         batch_op.alter_column('driver_id',
                existing_type=mysql.INTEGER(display_width=11),
                nullable=False)
