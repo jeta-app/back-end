@@ -28,7 +28,6 @@ def create_app():
 
     from app.controllers.admin_controller import admin_bp
     from app.controllers.user_controller import user_bp
-    from app.controllers.angkutan_controller import angkutan_bp
     from app.controllers.location_driver_controller import location_bp
     from app.controllers.location_passenger_controller import location_passenger_bp
     from app.controllers.destination_driver_controller import destination_driver_bp
@@ -37,16 +36,6 @@ def create_app():
     app.register_blueprint(user_bp)
     app.register_blueprint(location_bp)
     app.register_blueprint(location_passenger_bp)
-    app.register_blueprint(angkutan_bp)
     app.register_blueprint(destination_driver_bp)
     return app
 
-# def jwt_required_socket(f):
-#     def wrapper(*args, **kwargs):
-#         try:
-#             verify_jwt_in_request()
-#         except Exception as e:
-#             emit('error', {'message': str(e)})
-#             return False
-#         return f(*args, **kwargs)
-#     return wrapper

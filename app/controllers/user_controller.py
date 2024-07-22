@@ -2,7 +2,6 @@ from flask import jsonify, request, Blueprint
 from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
 from app.models.location_drivers import Location_Drivers
 from app.models.user import Users, Role, Status
-from app.models.angkutan import Angkutan
 from app import db, bcrypt, jwt
 
 user_bp = Blueprint('user', __name__)
@@ -62,7 +61,6 @@ def login():
         return jsonify(message="User not found"), 404
 
     if bcrypt.check_password_hash(user.password, password):
-        # Set driver status to active if the user is a driver
         if user.role == Role.Driver:
             user.status = Status.Active
             db.session.commit()

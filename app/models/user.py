@@ -25,6 +25,9 @@ class Users(db.Model):
     route = db.Column(db.String(200), nullable=True)
     operational_time = db.Column(db.String(200), nullable=True)
     status = db.Column(db.Enum(Status), nullable=True)
+    angkutan_number = db.Column(db.String(10), nullable=True)
+    brand_car = db.Column(db.String(255), nullable=True)
+    series_car = db.Column(db.String(255), nullable=True)
 
     def __init__(self, **kwargs):
         super(Users, self).__init__(**kwargs)
@@ -32,3 +35,6 @@ class Users(db.Model):
             self.route = None
             self.operational_time = None
             self.status = None
+            self.angkutan_number = None
+            self.brand_car = None
+            self.series_car = None

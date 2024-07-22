@@ -1,97 +1,140 @@
 from flask import jsonify, request, Blueprint
 from app.models.location_drivers import Location_Drivers
-from app.models.user import Users, Role
-from app.models.angkutan import Angkutan
+from app.models.user import Users, Role, Status
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from app import db
+from app import bcrypt, db
 
 admin_bp = Blueprint('admin', __name__)
 
-
 def is_admin():
     current_user = get_jwt_identity()
-    print(current_user)
-    print(current_user['role'])
     return current_user['role'] == 'Admin'
 
-
-@admin_bp.route('/admin/angkutan', methods=['POST'])
+@admin_bp.route('/admin/driver', methods=['POST'])
 @jwt_required()
-def add_angkutan():
+def add_driver():
     if not is_admin():
         return jsonify(message="Admin privileges required"), 403
     data = request.get_json()
-    if not data or 'driver_id' not in data or 'angkutan_jurusan' not in data:
-        return jsonify(message="Missing required fields"), 400
-    angkutan_number = data['angkutan_number']
-    angkutan_jurusan = data['angkutan_jurusan']
-    driver_id = data['driver_id']
-    car_brand = data['car_brand']
-    car_series = data['car_series']
-    existing_angkutan = Angkutan.query.filter_by(
-        angkutan_number=angkutan_number).first()
-    if existing_angkutan:
-        return jsonify(message="Angkutan number already exists"), 400
-    driver = Users.query.filter_by(
-        id=driver_id, role=Role.Driver).first()
-    if not driver:
-        return jsonify(message="Driver not found or invalid role"), 400
-    angkutan = Angkutan(angkutan_number=angkutan_number,
-                        angkutan_jurusan=angkutan_jurusan, driver_id=driver_id, car_brand=car_brand, car_series=car_series)
-    db.session.add(angkutan)
+    required_fields = ['username', 'password', 'email', 'firstname', 'lastname', 'phone_number', 'route', 'operational_time']
+    for field in required_fields:
+        if field not in data:
+            return jsonify(message=f"Missing required field: {field}"), 400
+
+    username = data['username']
+    email = data['email']
+    password = data['password']
+    role = data.get('role', 'Driver')
+    firstname = data['firstname']
+    lastname = data['lastname']
+    phone_number = data['phone_number']
+    route = data['route']
+    operational_time = data['operational_time']
+    status = data.get('status', None)
+    angkutan_number = data.get('angkutan_number', None)
+    brand_car = data.get('brand_car', None)
+    series_car = data.get('series_car', None)
+
+    existing_driver = Users.query.filter_by(username=username).first()
+    if existing_driver:
+        return jsonify(message="Driver already exists"), 400
+
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+    driver = Users(
+        username=username,
+        password=hashed_password,
+        firstname=firstname,
+        lastname=lastname,
+        email=email,
+        phone_Number=phone_number,
+        route=route,
+        role=Role.Driver,
+        operational_time=operational_time,
+        status=status,
+        angkutan_number=angkutan_number,
+        brand_car=brand_car,
+        series_car=series_car,
+    )
+
+    db.session.add(driver)
     db.session.commit()
-    return jsonify(message="Angkutan added successfully", angkutan_id=angkutan.id), 201
+    return jsonify(message="Driver added successfully"), 201
 
-
-@admin_bp.route('/admin/angkutan', methods=['GET'])
+@admin_bp.route('/admin/drivers', methods=['GET'])
 @jwt_required()
-def get_angkutan():
+def get_all_drivers():
     if not is_admin():
         return jsonify(message="Admin privileges required"), 403
-    angkutan = Angkutan.query.all()
-    hasil = []
-    for angkutans in angkutan:
-        hasil.append({
-            'angkutans_jurusan': angkutans.Angkutan_ID,
-            'angkutans_jurusan': angkutans.Angkutan_Name,
-            'driver_id': angkutans.Driver_ID,
+
+    drivers = Users.query.filter_by(role=Role.Driver).all()
+    drivers_list = []
+    for driver in drivers:
+        drivers_list.append({
+            'id': driver.id,
+            'username': driver.username,
+            'firstname': driver.firstname,
+            'lastname': driver.lastname,
+            'email': driver.email,
+            'phone_number': driver.phone_Number,
+            'route': driver.route,
+            'operational_time': driver.operational_time,
+            'status': driver.status.name if driver.status else None,
+            'angkutan_number': driver.angkutan_number,
+            'brand_car': driver.brand_car,
+            'series_car': driver.series_car
         })
-    return jsonify(angkutan=result), 200
+    return jsonify(drivers=drivers_list), 200
 
-
-@admin_bp.route('/admin/angkutan/<int:angkutan_id>', methods=['PUT'])
+@admin_bp.route('/admin/driver/<int:driver_id>', methods=['PUT'])
 @jwt_required()
-def update_angkutan(angkutan_id):
+def update_driver(driver_id):
     if not is_admin():
         return jsonify(message="Admin privileges required"), 403
+
     data = request.get_json()
-    angkutan = Angkutan.query.get(angkutan_id)
-    if not angkutan:
-        return jsonify(message="Angkutan not found"), 404
+    driver = Users.query.get(driver_id)
+    if not driver:
+        return jsonify(message="Driver not found"), 404
+
+    if driver.role != Role.Driver:
+        return jsonify(message="Can only update users with role 'Driver'"), 403
+
+    if 'username' in data:
+        driver.username = data['username']
+    if 'email' in data:
+        driver.email = data['email']
+    if 'phone_number' in data:
+        driver.phone_Number = data['phone_number']
+    if 'route' in data:
+        driver.route = data['route']
+    if 'operational_time' in data:
+        driver.operational_time = data['operational_time']
+    if 'status' in data:
+        driver.status = data['status']
     if 'angkutan_number' in data:
-        angkutan.Angkutan_Number = data['angkutan_number']
-    if 'driver_id' in data:
-        driver_id = data['driver_id']
-        driver = User.query.filter_by(
-            User_id=driver_id, Role=Role.Driver).first()
-        if not driver:
-            return jsonify(message="Driver not found or invalid role"), 400
-        angkutan.Driver_ID = driver_id
-
+        driver.angkutan_number = data['angkutan_number']
+    if 'brand_car' in data:
+        driver.brand_car = data['brand_car']
+    if 'series_car' in data:
+        driver.series_car = data['series_car']
+        
     db.session.commit()
-    return jsonify(message="Bus updated successfully"), 200
+    return jsonify(message="Driver updated successfully"), 200
 
 
-@admin_bp.route('/admin/angkutan/<int:angkutan_id>', methods=['DELETE'])
+@admin_bp.route('/admin/driver/<int:driver_id>', methods=['DELETE'])
 @jwt_required()
-def delete_angkutan(angkutan_id):
+def delete_driver(driver_id):
     if not is_admin():
         return jsonify(message="Admin privileges required"), 403
 
-    angkutan = Angkutan.query.get(bus_id)
-    if not bus:
-        return jsonify(message="Bus not found"), 404
+    driver = Users.query.get(driver_id)
+    if not driver:
+        return jsonify(message="Driver not found"), 404
 
-    db.session.delete(angkutan)
+    if driver.role != Role.Driver:
+        return jsonify(message="Can only delete users with role 'Driver'"), 403
+
+    db.session.delete(driver)
     db.session.commit()
-    return jsonify(message="Angkutan deleted successfully"), 200
+    return jsonify(message="Driver deleted successfully"), 200
